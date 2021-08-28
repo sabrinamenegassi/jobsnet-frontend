@@ -9,7 +9,13 @@ import { ThirdColumnsWrapper, TwoColumnsWrapper } from '../../components/Grid'
 
 import api from '../../services/api'
 
-import { HomeWrapper, GroupLocale, TitleError, TitleSuccess } from './styles'
+import {
+  HomeWrapper,
+  GroupFooter,
+  GroupLocale,
+  TitleError,
+  TitleSuccess
+} from './styles'
 
 const Home: React.FC = () => {
   const [nome, setNome] = useState('')
@@ -21,29 +27,31 @@ const Home: React.FC = () => {
   const [dataDeNascimento, setDataDeNascimento] = useState('')
   const [corDaPele, setCorDaPele] = useState('')
   const [sexo, setSexo] = useState('')
-  const [localizacao, setLocalizacao] = useState('')
+  const [cep, setCep] = useState('')
+  const [logradouro, setLogradouro] = useState('')
+  const [numero, setNumero] = useState('')
+  const [bairro, setBairro] = useState('')
+  const [cidade, setCidade] = useState('')
 
   const [formSucesso, setFormSucesso] = useState('')
   const [formErro, setFormErro] = useState('')
-  const [localizacaoErro, setLocalizacaoErro] = useState(false)
+  const [cepErro, setCepErro] = useState(false)
 
   const getLocation = useCallback(async () => {
-    navigator.geolocation.getCurrentPosition(async (position) => {
-      const { latitude, longitude } = position.coords
+    try {
+      const { data } = await api.get('location', {
+        params: { cep }
+      })
 
-      try {
-        const { data } = await api.get('location', {
-          params: { latitude, longitude }
-        })
-
-        if (data) {
-          setLocalizacao(data.address)
-        }
-      } catch (error) {
-        setLocalizacaoErro(true)
+      if (data) {
+        setCidade(data.localidade)
+        setBairro(data.bairro)
+        setLogradouro(data.logradouro)
       }
-    })
-  }, [])
+    } catch (error) {
+      setCepErro(true)
+    }
+  }, [cep])
 
   const handleClear = useCallback(() => {
     setNome('')
@@ -55,7 +63,11 @@ const Home: React.FC = () => {
     setDataDeNascimento('')
     setCorDaPele('')
     setSexo('')
-    setLocalizacao('')
+    setCep('')
+    setLogradouro('')
+    setNumero('')
+    setBairro('')
+    setCidade('')
   }, [])
 
   const handleSubmit = useCallback(async () => {
@@ -70,13 +82,17 @@ const Home: React.FC = () => {
         dataDeNascimento,
         corDaPele,
         sexo,
-        localizacao
+        cep,
+        logradouro,
+        numero,
+        bairro,
+        cidade
       })
 
       if (data) {
         setFormErro('')
         setFormSucesso(data.message)
-        setLocalizacaoErro(false)
+        setCepErro(false)
 
         handleClear()
       }
@@ -85,14 +101,18 @@ const Home: React.FC = () => {
       setFormErro(error.response.data.message)
     }
   }, [
+    bairro,
+    cep,
+    cidade,
     corDaPele,
     cpf,
     dataDeNascimento,
     email,
     handleClear,
     identidade,
-    localizacao,
+    logradouro,
     nome,
+    numero,
     profissao,
     sexo,
     telefone
@@ -129,11 +149,11 @@ const Home: React.FC = () => {
               onInputChange={setProfissao}
             />
           </TwoColumnsWrapper>
+
           <TwoColumnsWrapper>
             <Input
               label="Identidade"
               name="identidade"
-              required
               value={identidade}
               onInputChange={setIdentidade}
             />
@@ -145,6 +165,7 @@ const Home: React.FC = () => {
               onInputChange={setCpf}
             />
           </TwoColumnsWrapper>
+
           <TwoColumnsWrapper>
             <Input
               label="Email"
@@ -157,10 +178,12 @@ const Home: React.FC = () => {
             <Input
               label="Telefone"
               name="telefone"
+              required
               value={telefone}
               onInputChange={setTelefone}
             />
           </TwoColumnsWrapper>
+
           <ThirdColumnsWrapper>
             <Input
               label="Data de Nascimento"
@@ -204,27 +227,66 @@ const Home: React.FC = () => {
           <GroupLocale>
             <div>
               <Input
-                label="Localização (cidade)"
-                name="localizacao"
+                label="CEP"
+                name="cep"
                 required
-                value={localizacao}
-                initialValue={localizacao}
-                onInputChange={setLocalizacao}
+                value={cep}
+                initialValue={cep}
+                onInputChange={setCep}
               />
               <Button variant="link" onClick={getLocation}>
-                Me localize
+                Buscar Endereço
               </Button>
             </div>
-            {localizacaoErro && (
-              <small>
-                Endereço não encontrado, preencha o campo por favor.
-              </small>
+            {cepErro && (
+              <small>CEP não encontrado, preencha o campo por favor.</small>
             )}
           </GroupLocale>
-          <Button type="submit">Enviar</Button>
-          <Button onClick={handleClear} variant="link">
-            Limpar Formulário
-          </Button>
+
+          <TwoColumnsWrapper>
+            <Input
+              label="Cidade"
+              name="cidade"
+              required
+              value={cidade}
+              initialValue={cidade}
+              onInputChange={setCidade}
+            />
+            <Input
+              label="Bairro"
+              name="bairro"
+              required
+              value={bairro}
+              initialValue={bairro}
+              onInputChange={setBairro}
+            />
+          </TwoColumnsWrapper>
+
+          <TwoColumnsWrapper>
+            <Input
+              label="Logradouro"
+              name="logradouro"
+              required
+              value={logradouro}
+              initialValue={logradouro}
+              onInputChange={setLogradouro}
+            />
+            <Input
+              label="Número"
+              name="numero"
+              required
+              value={numero}
+              initialValue={numero}
+              onInputChange={setNumero}
+            />
+          </TwoColumnsWrapper>
+
+          <GroupFooter>
+            <Button type="submit">Enviar</Button>
+            <Button onClick={handleClear} variant="link">
+              Limpar Formulário
+            </Button>
+          </GroupFooter>
         </form>
       </HomeWrapper>
     </Base>

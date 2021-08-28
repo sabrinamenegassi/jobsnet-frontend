@@ -6,9 +6,12 @@ export const HomeWrapper = styled.div`
   margin: 0 auto;
 `
 
-export const GroupLocale = styled.div`
-  padding-bottom: 16px;
+export const GroupFooter = styled.div`
+  display: block;
+  padding-top: 16px;
+`
 
+export const GroupLocale = styled.div`
   > div {
     display: flex;
     flex-direction: column;
